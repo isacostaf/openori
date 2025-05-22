@@ -6,26 +6,28 @@ import 'package:opennutritracker/main.dart' as app;
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // Start the app once before all tests
+  app.main();
+
   group('Onboarding Policy Test', () {
-    testWidgets('Should require policy confirmation before proceeding',
+    testWidgets('Should require policy confirmation, then select gender and birthday',
         (WidgetTester tester) async {
-      // Start the app
-      app.main();
+      // Wait for the app to settle after initial startup
       await tester.pumpAndSettle();
       
       // Add a delay to see the initial screen
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
 
       // Find the "Start" button
       final startButton = find.text('START');
       expect(startButton, findsOneWidget, reason: 'The Start button should be visible');
-
+      
       // Try to tap the start button without accepting policy
       await tester.tap(startButton);
       await tester.pumpAndSettle();
       
       // Add a delay to see the result of trying to proceed without accepting
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
 
       // Verify we are still on the first page
       expect(find.text('Welcome to'), findsOneWidget, 
@@ -39,72 +41,70 @@ void main() {
       await tester.pumpAndSettle();
       
       // Add a delay to see the checkbox being checked
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
 
       // Now try to tap the start button again
       await tester.tap(startButton);
       await tester.pumpAndSettle();
       
       // Add a delay to see the transition to the next page
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
 
-      // Verify we've moved to the next page (gender selection)
-      expect(find.text('Gender'), findsOneWidget,
-        reason: 'We should advance to the gender selection page after accepting the policy');
-    });
+      //////// GENDER SELECTION ////////
 
-    testWidgets('Test gender and birthday selection', (WidgetTester tester) async {
-      // Start the app
-      app.main();
+      // Ensure the UI is settled after navigating to gender selection
       await tester.pumpAndSettle();
-      
-      // Add a delay to see the initial screen
-      await Future.delayed(const Duration(seconds: 2));
 
-      // Select male
-      final maleOption = find.text('male');
+      final maleOption = find.text('♂ male');
       expect(maleOption, findsOneWidget, reason: 'Male option should be visible');
       
       await tester.tap(maleOption);
       await tester.pumpAndSettle();
       
       // Add a delay to see the selection
-      await Future.delayed(const Duration(seconds: 2));
-      
+      await Future.delayed(const Duration(seconds: 1));
+
+      //////// BIRTHDAY SELECTION ////////
+
       // Tap the Birthday field to open the calendar
-      final birthdayField = find.text('Birthday');
+      final birthdayField = find.byIcon(Icons.calendar_month_outlined);
       expect(birthdayField, findsOneWidget, reason: 'Birthday field should be visible');
       
       await tester.tap(birthdayField);
       await tester.pumpAndSettle();
       
       // Add a delay to see the calendar dialog
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
 
       // Verify the date picker dialog is visible
       expect(find.text('Select date'), findsOneWidget, reason: 'Date picker dialog title should be visible');
       
       // Find and tap the edit icon to switch to text input
-      final editIcon = find.byIcon(Icons.edit);
+      final editIcon = find.byIcon(Icons.edit_outlined);
       expect(editIcon, findsOneWidget, reason: 'Edit icon should be visible in date picker dialog');
       
       await tester.tap(editIcon);
       await tester.pumpAndSettle();
+
+      // Add a small delay to ensure the text field is ready after switching view
+      await Future.delayed(const Duration(milliseconds: 300));
+
       
       // Add a delay to see the text input field
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
 
       // Find the text input field and enter the date
       // Assuming the text field appears after tapping the edit icon, we try to find a TextField widget.
       // If there are multiple TextFields, this might need refinement.
-      final dateInput = find.byType(TextField);
+      final dateInput = find.byType(TextField).at(1);
       expect(dateInput, findsOneWidget, reason: 'Date input text field should be visible');
 
-      await tester.enterText(dateInput, '01/01/2001');
+      // Ensure the keyboard is shown and enter the text
+      await tester.enterText(dateInput, '12/06/2002');
       await tester.pumpAndSettle();
 
-      // Add a delay to see the entered text
-      await Future.delayed(const Duration(seconds: 2));
+      // Add a small delay to ensure the text is processed before tapping OK
+      await Future.delayed(const Duration(seconds: 1)); // Increased delay for visual confirmation
 
       // Tap the OK button to confirm the date selection
       final okButton = find.text('OK');
@@ -113,7 +113,7 @@ void main() {
       await tester.pumpAndSettle();
       
       // Add a delay to see the dialog close
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
 
       // Tap the NEXT button to advance
       final nextButton = find.text('NEXT');
@@ -123,11 +123,49 @@ void main() {
       await tester.pumpAndSettle();
       
       // Add a delay to see the transition
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
       
-      // Verify we moved to the next page
-      expect(find.text('Birthday'), findsNothing, reason: 'Should have moved past birthday page');
-      expect(find.text('Gender'), findsNothing, reason: 'Should have moved past gender page');
+    ////////////// height ////////////
+    final heightInput = find.byType(TextField).at(0);
+      expect(heightInput, findsOneWidget, reason: 'Height input text field should be visible');
+
+      // Ensure the keyboard is shown and enter the text
+      await tester.enterText(heightInput, '60');
+      await tester.pumpAndSettle();
+
+      await Future.delayed(const Duration(seconds: 1));
+    
+    ////////////// weight //////////////
+    final weightInput = find.byType(TextField).at(1);
+      expect(weightInput, findsOneWidget, reason: 'Weight input text field should be visible');
+
+      // Ensure the keyboard is shown and enter the text
+      await tester.enterText(weightInput, '60');
+      await tester.pumpAndSettle();
+
+    ///// next
+      await tester.tap(nextButton);
+      await tester.pumpAndSettle();
+
+    ///// active sedentary field
+      final sedentaryField = find.text('Sedentary');
+      expect(sedentaryField, findsOneWidget, reason: 'sedentary field should be visible');
+
+      await tester.tap(sedentaryField);
+      await tester.pumpAndSettle();
+
+      await tester.tap(nextButton);
+      await tester.pumpAndSettle();
+
+      ///// goal lose weight field
+      final loseweightField = find.text('Lose Weight');
+      expect(loseweightField, findsOneWidget, reason: 'Lose Weight field should be visible');
+
+      await tester.tap(loseweightField);
+      await tester.pumpAndSettle();
+
+      await tester.tap(nextButton);
+      await tester.pumpAndSettle();
 
     });
   });
