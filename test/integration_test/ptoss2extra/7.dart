@@ -100,7 +100,7 @@ void main() {
       expect(dateInput, findsOneWidget, reason: 'Date input text field should be visible');
 
       // Get tomorrow's date and format it as MM/dd/yyyy
-      final tomorrow = DateTime.now().add(const Duration(days: 5));
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
       final formattedDate = '${tomorrow.month.toString().padLeft(2, '0')}/${tomorrow.day.toString().padLeft(2, '0')}/${tomorrow.year}';
 
       // Ensure the keyboard is shown and enter the text
